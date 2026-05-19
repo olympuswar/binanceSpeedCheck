@@ -3,8 +3,7 @@ import json
 import time
 import websockets
 
-# Switching to the raw infrastructure stream URL to bypass general web CDN layers
-WS_URL = "wss://stream.binance.vision:9443/ws/btcusdt@aggTrade"
+WS_URL = "wss://stream.binance.com:9443/ws/btcusdt@aggTrade"
 
 async def track_time_delta():
     print("Connecting to Optimized Binance Infrastructure Socket...")
