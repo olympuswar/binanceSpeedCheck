@@ -9,8 +9,7 @@ WS_URL = "wss://stream.binance.vision:9443/ws/btcusdt@aggTrade"
 async def track_time_delta():
     print("Connecting to Optimized Binance Infrastructure Socket...")
     
-    # Increase the connection buffer sizes so the network card doesn't choke
-    async with websockets.connect(WS_URL, max_queue=1000, read_limit=2**20) as ws:
+    async with websockets.connect(WS_URL) as ws:
         print("Connected! Streaming optimized ticks...\n")
         print(f"{'Binance Event Time':<20} | {'Ireland Server Time':<20} | {'True Delay'}")
         print("-" * 68)
