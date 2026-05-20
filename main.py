@@ -28,6 +28,17 @@ def record(exchange: str, diff_ms: int) -> None:
         print(f"[{exchange}] first tick received (delay {diff_ms} ms)")
 
 
+async def binance() -> None:
+    url = "wss://stream.binance.com:9443/ws/btcusdt@aggTrade"
+    async with websockets.connect(url) as ws:
+        async for message in ws:
+            t = now_ms()
+            data = json.loads(message)
+            event_ms = data.get("E")
+            if event_ms:
+                record("BINANCE", t - int(event_ms))
+
+
 async def coinbase() -> None:
     url = "wss://ws-feed.exchange.coinbase.com"
     sub = {"type": "subscribe", "product_ids": ["BTC-USD"], "channels": ["matches"]}
@@ -88,7 +99,7 @@ async def summary_printer() -> None:
         await asyncio.sleep(SUMMARY_INTERVAL_SEC)
         print(f"\n--- summary (window = last {SAMPLE_WINDOW} samples) ---")
         print(f"{'exchange':<10} {'count':>6} {'min':>6} {'p50':>6} {'p99':>6} {'max':>6}  (ms)")
-        for ex in ("COINBASE", "KRAKEN", "GEMINI"):
+        for ex in ("BINANCE", "COINBASE", "KRAKEN", "GEMINI"):
             buf = samples.get(ex)
             if not buf:
                 print(f"{ex:<10} {'-':>6} {'-':>6} {'-':>6} {'-':>6} {'-':>6}")
@@ -102,8 +113,9 @@ async def summary_printer() -> None:
 
 
 async def main() -> None:
-    print("Connecting to Coinbase, Kraken, Gemini...")
+    print("Connecting to Binance, Coinbase, Kraken, Gemini...")
     await asyncio.gather(
+        run_with_retry("BINANCE", binance),
         run_with_retry("COINBASE", coinbase),
         run_with_retry("KRAKEN", kraken),
         run_with_retry("GEMINI", gemini),
